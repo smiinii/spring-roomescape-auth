@@ -63,8 +63,9 @@ public class ScheduleRepositoryTest {
         Long userId = 1L;
         jdbcTemplate.update("INSERT INTO theme (id, name, description, image_url, required_time) VALUES (?, ?, ?, ?, ?)",
                 themeId, "테마", "설명", "경로", LocalTime.of(2, 0));
-        jdbcTemplate.update("INSERT INTO \"USER\" (id, name, role) VALUES (?, ?, ?)",
-                userId, "유저", "USER");
+        jdbcTemplate.update("INSERT INTO \"USER\" (id, username, password, nickname, role) VALUES (?, ?, ?, ?, ?)",
+                1L, "user1", "pass123", "테스터1", "USER"
+        );
 
         jdbcTemplate.update("INSERT INTO schedule (id, theme_id, start_at, end_at) VALUES (?, ?, ?, ?)",
                 1L, themeId, "2026-12-10 10:00:00", "2026-12-10 12:00:00");

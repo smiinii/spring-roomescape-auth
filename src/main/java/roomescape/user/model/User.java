@@ -3,20 +3,26 @@ package roomescape.user.model;
 public class User {
 
     private Long id;
-    private String name;
+    private String username;
+    private String password;
+    private String nickname;
     private Role role;
 
     public User(){}
 
-    public User(String name, Role role) {
-        this(null, name, role);
+    public User(String username, String password, String nickname, Role role) {
+        this(null, username, password, nickname, role);
     }
 
-    public User(Long id, String name, Role role) {
-        validateName(name);
+    public User(Long id, String username, String password, String nickname, Role role) {
+        validateUsername(username);
+        validatePassword(password);
+        validateNickname(nickname);
         validateRole(role);
         this.id = id;
-        this.name = name;
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
         this.role = role;
     }
 
@@ -24,17 +30,37 @@ public class User {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getNickname() {
+        return nickname;
     }
 
     public Role getRole() {
         return role;
     }
 
-    private void validateName(String name) {
+    private void validateUsername(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("사용자 이름은 필수이며, 공백일 수 없습니다.");
+        }
+    }
+
+    private void validatePassword(String password) {
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("비밀번호는 필수이며, 공백일 수 없습니다.");
+        }
+    }
+
+    private void validateNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임은 필수이며, 공백일 수 없습니다.");
         }
     }
 

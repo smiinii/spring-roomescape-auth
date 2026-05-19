@@ -21,26 +21,30 @@ public class UserRepository {
     }
 
     public Long create(User user) {
-        String sql = "INSERT INTO  `user` (name, role) VALUES (?, ?)";
+        String sql = "INSERT INTO  `user` (username, password, nickname, role) VALUES (?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(
                 connection -> {
                     PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
-                    ps.setString(1, user.getName());
-                    ps.setString(2, user.getRole().name());
+                    ps.setString(1, user.getUsername());
+                    ps.setString(2, user.getPassword());
+                    ps.setString(3, user.getNickname());
+                    ps.setString(4, user.getRole().name());
                     return ps;
                 }, keyHolder);
         return  keyHolder.getKey().longValue();
     }
 
-    public Optional<User> findByName(String name) {
-        String sql = "SELECT id, name, role FROM \"USER\" WHERE name = ?";
+    public Optional<User> findByUserName(String name) {
+        String sql = "SELECT id, username, password, nickname, role FROM `user` WHERE username = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new User(
                     rs.getLong("id"),
-                    rs.getString("name"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("nickname"),
                     Role.valueOf(rs.getString("role"))
             ), name);
             return Optional.of(user);

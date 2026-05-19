@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 class ReservationServiceTest {
 
-    private final User user = new User(1L, "user1", Role.USER);
+    private final User user = new User(1L, "user1", "password123", "유저닉네임", Role.USER);
     private final Theme theme = new Theme(1L, "공포", "설명", "경로", LocalTime.of(2, 0));
     private final Schedule schedule = new Schedule(1L, LocalDateTime.of(2024, 12, 10, 12, 0), theme);
 
@@ -57,7 +57,7 @@ class ReservationServiceTest {
         CreateReservationRequest request = new CreateReservationRequest(2L, "user1");
         Schedule availableSchedule = new Schedule(2L, LocalDateTime.of(2024, 12, 10, 15, 0), theme);
 
-        when(userService.findByName("user1")).thenReturn(user);
+        when(userService.findByUserName("user1")).thenReturn(user);
         when(scheduleService.findById(2L)).thenReturn(availableSchedule);
         when(reservationRepository.existsByScheduleId(2L)).thenReturn(false);
         when(reservationRepository.create(any(Reservation.class))).thenReturn(100L);
@@ -75,7 +75,7 @@ class ReservationServiceTest {
         // given
         CreateReservationRequest request = new CreateReservationRequest(1L, "user1");
 
-        when(userService.findByName("user1")).thenReturn(user);
+        when(userService.findByUserName("user1")).thenReturn(user);
         when(scheduleService.findById(1L)).thenReturn(schedule);
         when(reservationRepository.existsByScheduleId(1L)).thenReturn(true);
 
@@ -91,7 +91,7 @@ class ReservationServiceTest {
         CreateReservationRequest request = new CreateReservationRequest(3L, "user1");
         Schedule pastSchedule = new Schedule(3L, LocalDateTime.of(2024, 5, 16, 9, 0), theme);
 
-        when(userService.findByName("user1")).thenReturn(user);
+        when(userService.findByUserName("user1")).thenReturn(user);
         when(scheduleService.findById(3L)).thenReturn(pastSchedule);
 
         // when & then
@@ -103,10 +103,10 @@ class ReservationServiceTest {
     @Test
     void 본인의_예약이_아닌_것을_취소하려고_하면_예외가_발생한다() {
         // given
-        User otherUser = new User(2L, "other", Role.USER);
+        User otherUser = new User(2L, "other", "otherPassword", "다른유저", Role.USER);
         Reservation othersReservation = new Reservation(1L, otherUser, schedule);
 
-        when(userService.findByName("user1")).thenReturn(user);
+        when(userService.findByUserName("user1")).thenReturn(user);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(othersReservation));
 
         // when & then
@@ -121,7 +121,7 @@ class ReservationServiceTest {
         Schedule pastSchedule = new Schedule(1L, LocalDateTime.of(2024, 5, 15, 12, 0), theme);
         Reservation passedReservation = new Reservation(1L, user, pastSchedule);
 
-        when(userService.findByName("user1")).thenReturn(user);
+        when(userService.findByUserName("user1")).thenReturn(user);
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(passedReservation));
 
         // when & then
@@ -133,7 +133,7 @@ class ReservationServiceTest {
     @Test
     void 예약_변경_시_업데이트된_행이_없으면_예외가_발생한다() {
         // given
-        when(userService.findByName("user1")).thenReturn(user);
+        when(userService.findByUserName("user1")).thenReturn(user);
         when(scheduleService.findById(2L)).thenReturn(new Schedule(2L, LocalDateTime.of(2024, 12, 10, 15, 0), theme));
 
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(new Reservation(1L, user, schedule)));

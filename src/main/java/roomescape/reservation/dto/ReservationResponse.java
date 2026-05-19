@@ -31,7 +31,7 @@ public class ReservationResponse {
         return new ReservationResponse(
                 reservation.getId(),
                 reservation.getUser().getId(),
-                reservation.getUser().getName(),
+                reservation.getUser().getUsername(),
                 reservation.getSchedule().getId(),
                 reservation.getSchedule().getStartAt(),
                 reservation.getSchedule().getEndAt(),

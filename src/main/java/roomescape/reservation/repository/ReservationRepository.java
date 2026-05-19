@@ -81,6 +81,8 @@ public class ReservationRepository {
         User user = new User(
                 resultSet.getLong("user_id"),
                 resultSet.getString("user_name"),
+                resultSet.getString("user_password"),
+                resultSet.getString("user_nickname"),
                 Role.valueOf(resultSet.getString("user_role"))
         );
 
@@ -105,7 +107,9 @@ public class ReservationRepository {
         return """
                 SELECT r.id AS reservation_id,
                        u.id AS user_id,
-                       u.name AS user_name,
+                       u.username AS user_name,
+                       u.password AS user_password,
+                       u.nickname AS user_nickname,
                        u.role AS user_role,
                        t.id AS theme_id,
                        t.description AS theme_description,
@@ -116,7 +120,7 @@ public class ReservationRepository {
                        s.start_at AS start_at,
                        s.end_at AS end_at
                 FROM reservation r
-                INNER JOIN "USER" u ON r.user_id = u.id
+                INNER JOIN `user` u ON r.user_id = u.id
                 INNER JOIN schedule s ON r.schedule_id = s.id
                 INNER JOIN theme t ON s.theme_id = t.id
                 """;

@@ -88,7 +88,10 @@ class ThemeRepositoryTest {
 
     @Test
     void 최근_예약이_많은_순서대로_인기_테마를_조회한다() {
-        jdbcTemplate.update("INSERT INTO \"USER\" (id, name, role) VALUES (?, ?, ?)", 1L, "user1", "USER");
+        jdbcTemplate.update(
+                "INSERT INTO \"USER\" (id, username, password, nickname, role) VALUES (?, ?, ?, ?, ?)",
+                1L, "user1", "pass123", "테스터1", "USER"
+        );
 
         Long themeId1 = themeRepository.create(new Theme("테마1", "설명1", "경로1", LocalTime.of(2, 0)));
         Long themeId2 = themeRepository.create(new Theme("테마2", "설명2", "경로2", LocalTime.of(2, 0)));

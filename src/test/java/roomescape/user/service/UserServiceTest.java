@@ -10,9 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import roomescape.exception.CustomBusinessException;
 import roomescape.exception.ErrorCode;
-import roomescape.user.dto.UserRequest;
+import roomescape.exception.NotFoundException;
+import roomescape.exception.UnauthorizedException;
+import roomescape.user.dto.JoinUserRequest;
+import roomescape.user.dto.LoginUserRequest;
 import roomescape.user.dto.UserResponse;
 import roomescape.user.model.Role;
 import roomescape.user.model.User;
@@ -30,12 +32,10 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("새로운 유저를 생성하면 UserResponse를 반환한다.")
-    void createNewUserReturnsUserResponse() {
+    void 새로운_유저를_생성하면_UserResponse를_반환한다() {
         // given
-        UserRequest request = new UserRequest("루크");
+        JoinUserRequest request = new JoinUserRequest("루크", "password123", "루크");
         Long expectedId = 1L;
-        User expectedUser = new User(expectedId, "루크", Role.USER);
 
         when(userRepository.create(any(User.class))).thenReturn(expectedId);
 
@@ -44,21 +44,50 @@ class UserServiceTest {
 
         // then
         assertThat(response.getId()).isEqualTo(expectedId);
-        assertThat(response.getName()).isEqualTo("루크");
+        assertThat(response.getNickname()).isEqualTo("루크");
         verify(userRepository).create(any(User.class));
     }
 
     @Test
-    @DisplayName("존재하지 않는 이름으로 유저를 조회하면 예외가 발생한다.")
-    void findByNonExistingNameThrowsException() {
+    void 존재하지_않는_이름으로_유저를_조회하면_예외가_발생한다() {
         // given
         String nonExistingName = "없는유저";
-        when(userRepository.findByName(nonExistingName)).thenReturn(java.util.Optional.empty());
+        when(userRepository.findByUserName(nonExistingName)).thenReturn(java.util.Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> userService.findByName(nonExistingName))
-                .isInstanceOf(CustomBusinessException.class)
+        assertThatThrownBy(() -> userService.findByUserName(nonExistingName))
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
-        verify(userRepository).findByName(nonExistingName);
+        verify(userRepository).findByUserName(nonExistingName);
+    }
+
+    @Test
+    void 로그인에_성공하면_UserResponse를_반환한다() {
+        // given
+        LoginUserRequest request = new LoginUserRequest("루크", "password123");
+        User expectedUser = new User(1L, "루크", "password123", "루크", Role.USER);
+
+        when(userRepository.findByUserName("루크")).thenReturn(java.util.Optional.of(expectedUser));
+
+        // when
+        UserResponse response = userService.login(request);
+
+        // then
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getNickname()).isEqualTo("루크");
+    }
+
+    @Test
+    void 로그인_시_비밀번호가_다르면_예외가_발생한다() {
+        // given
+        LoginUserRequest request = new LoginUserRequest("루크", "wrongPass");
+        User expectedUser = new User(1L, "루크", "password123", "루크", Role.USER);
+
+        when(userRepository.findByUserName("루크")).thenReturn(java.util.Optional.of(expectedUser));
+
+        // when & then
+        assertThatThrownBy(() -> userService.login(request))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage(ErrorCode.INVALID_CREDENTIALS.getMessage());
     }
 }

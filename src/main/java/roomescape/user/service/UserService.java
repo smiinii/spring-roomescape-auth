@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.exception.ConflictException;
 import roomescape.exception.NotFoundException;
-import roomescape.user.dto.UserRequest;
+import roomescape.exception.UnauthorizedException;
+import roomescape.user.dto.JoinUserRequest;
+import roomescape.user.dto.LoginUserRequest;
 import roomescape.user.dto.UserResponse;
 import roomescape.user.model.Role;
 import roomescape.user.model.User;
@@ -24,18 +26,28 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse create(UserRequest request) {
+    public UserResponse create(JoinUserRequest request) {
         try {
-            User user = new User(request.name(), DEFAULT);
+            User user = new User(request.userName(), request.password(), request.nickName(), DEFAULT);
             Long id = userRepository.create(user);
-            return UserResponse.from(new User(id, request.name(), DEFAULT));
+            return UserResponse.from(new User(id, request.userName(), request.password(), request.nickName(), DEFAULT));
         } catch (DuplicateKeyException e) {
             throw new ConflictException(ErrorCode.DUPLICATE_USER_NAME);
         }
     }
 
-    public User findByName(String name) {
-        return userRepository.findByName(name)
+    @Transactional
+    public UserResponse login(LoginUserRequest request) {
+        User user = this.findByUserName(request.userName());
+
+        if (!user.getPassword().equals(request.password())) {
+            throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
+        }
+        return UserResponse.from(user);
+    }
+
+    public User findByUserName(String name) {
+        return userRepository.findByUserName(name)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     }
 }

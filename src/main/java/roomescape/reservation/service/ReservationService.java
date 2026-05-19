@@ -39,7 +39,7 @@ public class ReservationService {
 
     @Transactional
     public Long create(CreateReservationRequest request) {
-        User user = userService.findByName(request.name());
+        User user = userService.findByUserName(request.name());
         Schedule schedule = scheduleService.findById(request.scheduleId());
         ensureScheduleIsBookable(schedule);
 
@@ -53,7 +53,7 @@ public class ReservationService {
     }
 
     public ReservationsResponse findReservationsByUserName(String name) {
-        User user = userService.findByName(name);
+        User user = userService.findByUserName(name);
         List<Reservation> reservations = reservationRepository.findAllByUserId(user.getId());
 
         return ReservationsResponse.from(reservations);
@@ -71,14 +71,14 @@ public class ReservationService {
 
     @Transactional
     public void delete(Long reservationId, String userName) {
-        User currentUser = userService.findByName(userName);
+        User currentUser = userService.findByUserName(userName);
         ensureReservationCanBeModified(reservationId, currentUser);
         reservationRepository.delete(reservationId);
     }
 
     @Transactional
     public void update(Long reservationId, Long newScheduleId, String userName) {
-        User currentUser = userService.findByName(userName);
+        User currentUser = userService.findByUserName(userName);
         Schedule newSchedule = scheduleService.findById(newScheduleId);
 
         ensureReservationCanBeModified(reservationId, currentUser);

@@ -1,0 +1,33 @@
+package roomescape.theme.controller;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import roomescape.theme.dto.ThemeRequest;
+import roomescape.theme.service.ThemeService;
+
+@RestController
+@RequestMapping("/admin/themes")
+public class AdminThemeController {
+
+    private final ThemeService themeService;
+
+    public AdminThemeController(ThemeService themeService) {
+        this.themeService = themeService;
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> create(@RequestBody @Valid ThemeRequest request) {
+        Long id = themeService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @NotNull(message = "테마 ID는 필수입니다.") @Positive(message = "테마 ID는 양수여야 합니다.") Long id) {
+        themeService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}

@@ -1,6 +1,6 @@
-MERGE INTO `user` KEY(id) VALUES (1, '루크', 'ADMIN');
-MERGE INTO `user` KEY(id) VALUES (2, '소낙눈', 'USER');
-MERGE INTO `user` KEY(id) VALUES (3, '포비', 'USER');
+MERGE INTO `user` (id, username, password, nickname, role) KEY(id) VALUES (1, '루크', '1234', '루크닉네임', 'ADMIN');
+MERGE INTO `user` (id, username, password, nickname, role) KEY(id) VALUES (2, '소낙눈', '1234', '소낙눈닉네임', 'USER');
+MERGE INTO `user` (id, username, password, nickname, role) KEY(id) VALUES (3, '포비', 'password123', '포비닉네임', 'USER');
 
 MERGE INTO theme KEY(id) VALUES (1, '공포', '등골이 오싹한 공포 테마', 'https://i.pinimg.com/736x/b3/4a/d4/b34ad4fd5bcbced41d7f340c539cd4d7.jpg', '02:00:00');
 MERGE INTO theme KEY(id) VALUES (2, '로맨스', '두근두근 로맨스 테마', 'https://i.pinimg.com/1200x/c2/a3/00/c2a30020e8c1a25f7032d7d360886de7.jpg', '02:00:00');

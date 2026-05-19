@@ -1,46 +1,115 @@
-// /Users/smini/Desktop/resunmini/우테코 8기/spring-roomescape-member/src/main/resources/static/app.js
-
 // 현재 로그인한 사용자 이름을 저장할 변수
 let currentUser = '';
 // 🚨 예약 변경 모드를 위한 전역 변수
 let isUpdateMode = false;
 let reservationToUpdateId = null;
 
+// =================================================================================================
+// ✅ 인증 관련 기능 (회원가입, 로그인, 로그아웃)
+// =================================================================================================
 
-// 로그인 버튼 클릭 이벤트
-document.getElementById('login-btn').addEventListener('click', () => {
-    const nameInput = document.getElementById('login-name').value.trim();
+// '회원가입 하러가기' 버튼 클릭 이벤트
+document.getElementById('show-signup-btn').addEventListener('click', () => {
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('signup-section').classList.remove('hidden');
+});
 
-    if (!nameInput) {
-        alert('이름을 입력해주세요.');
+// '로그인 화면으로' 버튼 클릭 이벤트
+document.getElementById('show-login-btn').addEventListener('click', () => {
+    document.getElementById('signup-section').classList.add('hidden');
+    document.getElementById('login-section').classList.remove('hidden');
+});
+
+// 회원가입 버튼 클릭 이벤트 (POST /users)
+document.getElementById('signup-btn').addEventListener('click', () => {
+    const userName = document.getElementById('signup-id').value.trim();
+    const password = document.getElementById('signup-password').value.trim();
+    const nickName = document.getElementById('signup-nickname').value.trim();
+
+    if (!userName || !password || !nickName) {
+        alert('모든 필드를 입력해주세요.');
         return;
     }
 
-    // 일반 사용자일 경우
-    currentUser = nameInput;
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('reservation-section').classList.remove('hidden');
+    fetch('/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName, password, nickName })
+    })
+        .then(response => {
+            if (response.status === 201) { // 201 Created
+                alert("회원가입 성공! 로그인해주세요.");
+                document.getElementById('show-login-btn').click(); // 로그인 화면으로 전환
+            } else {
+                return response.json().then(err => { throw new Error(err.message) });
+            }
+        })
+        .catch(error => {
+            alert(`회원가입 실패: ${error.message}`);
+        });
+});
 
-    // 💡 관리자일 경우, 관리자 페이지로 가는 버튼을 보여줍니다.
-    if (currentUser === '루크') {
-        document.getElementById('admin-page-btn').classList.remove('hidden');
+// 로그인 버튼 클릭 이벤트 (POST /users/login)
+document.getElementById('login-btn').addEventListener('click', () => {
+    const userName = document.getElementById('login-id').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+
+    if (!userName || !password) {
+        alert('아이디와 비밀번호를 모두 입력해주세요.');
+        return;
     }
 
-    loadThemes(); // 일반 유저 화면이 뜨면 테마를 불러옵니다.
-    loadPopularThemes(); // 인기 테마 통계도 함께 불러옵니다.
+    fetch('/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName, password })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.json().then(err => { throw new Error(err.message) });
+            }
+        })
+        .then(userData => {
+            // 서버에서 받아온 UserResponse의 nickname을 저장 (실제로는 username이 담겨있음)
+            currentUser = userData.nickname;
+
+            // 화면 전환
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('reservation-section').classList.remove('hidden');
+
+            // 💡 관리자일 경우, 관리자 페이지로 가는 버튼을 보여줍니다.
+            // 이 부분은 나중에 백엔드에서 role을 받아와서 처리하는 것이 더 좋습니다.
+            if (currentUser === '루크') {
+                document.getElementById('admin-page-btn').classList.remove('hidden');
+            }
+
+            // 데이터 로드
+            loadThemes();
+            loadPopularThemes();
+        })
+        .catch(error => {
+            alert(`로그인 실패: ${error.message}`);
+        });
+});
+
+// 로그아웃 버튼 클릭 이벤트 (POST /users/logout)
+document.getElementById('logout-btn').addEventListener('click', () => {
+    fetch('/users/logout', {
+        method: 'POST'
+    }).then(response => {
+        if (response.ok) {
+            alert("로그아웃 되었습니다.");
+            window.location.reload(); // 페이지를 새로고침하여 모든 상태를 초기화합니다.
+        }
+    });
 });
 
 // 페이지 로드 시 날짜 입력 필드의 최소 날짜를 오늘로 설정
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('date-input').min = today;
-});
-
-// 이름 입력창에서 엔터키를 눌렀을 때 '시작하기' 버튼 클릭 효과 주기
-document.getElementById('login-name').addEventListener('keyup', (event) => {
-    if (event.key === 'Enter') {
-        document.getElementById('login-btn').click();
-    }
 });
 
 // 관리자 페이지 버튼 클릭 이벤트

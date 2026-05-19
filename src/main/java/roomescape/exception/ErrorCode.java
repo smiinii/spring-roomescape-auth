@@ -3,6 +3,11 @@ package roomescape.exception;
 import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
+    // interceptor
+    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "로그인이 필요한 서비스입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다. 다시 로그인해 주세요."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "로그인 시간이 만료되었습니다. 다시 로그인해 주세요."),
+    INSUFFICIENT_PERMISSIONS(HttpStatus.FORBIDDEN, "해당 기능에 접근할 권한이 없습니다."),
     // Reservation
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 예약입니다. 예약 정보를 다시 확인해주세요."),
     RESERVATION_NOT_OWNER(HttpStatus.FORBIDDEN, "해당 예약에 대한 권한이 없습니다. 로그인 정보를 확인해주세요."),

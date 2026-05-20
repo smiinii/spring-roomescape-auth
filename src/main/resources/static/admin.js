@@ -175,8 +175,8 @@ function loadAdminSchedules() {
             schedules.forEach(schedule => {
                 const row = scheduleListBody.insertRow();
                 row.insertCell().textContent = schedule.id;
-                row.insertCell().textContent = schedule.startAt.split('T')[0]; // 날짜만 추출
-                row.insertCell().textContent = schedule.startAt.split('T')[1].substring(0, 5); // 시간만 추출
+                row.insertCell().textContent = schedule.startAt.split(' ')[0]; // 날짜만 추출
+                row.insertCell().textContent = schedule.startAt.split(' ')[1].substring(0, 5); // 시간만 추출
                 row.insertCell().textContent = schedule.themeName;
                 const deleteCell = row.insertCell();
                 const deleteButton = document.createElement('button');

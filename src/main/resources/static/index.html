@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <!-- 로그인 섹션 -->
+    <!-- 로그인 섹션 (초기 화면) -->
     <div id="login-section" class="container">
         <h1>환영합니다 👋</h1>
         <div class="form-group">
@@ -43,7 +43,7 @@
         <button id="show-login-btn" class="secondary-btn">로그인 화면으로</button>
     </div>
 
-    <!-- 예약 섹션 (처음에는 숨겨둠) -->
+    <!-- 예약 섹션 (로그인 후 표시) -->
     <div id="reservation-section" class="container hidden">
         <div class="reservation-header">
             <h1>방탈출 예약하기 🗝️</h1>
@@ -92,10 +92,10 @@
     </div>
 
     <!-- 내 예약 목록 섹션 -->
-    <div id="my-reservations-section" class="container hidden">
+    <div id="my-reservations-section" class="container hidden"> <!-- ID 통일 -->
         <div class="reservation-header">
             <h1>내 예약 목록</h1>
-            <button id="back-to-reservation-btn" class="primary-btn">예약하기</button>
+            <button id="back-to-reservation-btn" class="primary-btn small">예약하기</button>
         </div>
 
         <section class="my-reservations-list-section">

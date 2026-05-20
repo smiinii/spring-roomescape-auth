@@ -4,6 +4,10 @@ let currentUser = '';
 let isUpdateMode = false;
 let reservationToUpdateId = null;
 
+// ✅ 새로 추가된 전역 변수
+let selectedThemeId = null;
+let selectedDate = '';
+
 // =================================================================================================
 // ✅ 인증 관련 기능 (회원가입, 로그인, 로그아웃)
 // =================================================================================================
@@ -81,8 +85,11 @@ document.getElementById('login-btn').addEventListener('click', () => {
 
             // 💡 관리자일 경우, 관리자 페이지로 가는 버튼을 보여줍니다.
             // 이 부분은 나중에 백엔드에서 role을 받아와서 처리하는 것이 더 좋습니다.
-            if (currentUser === '루크') {
+            // (예: if (userData.role === 'ADMIN'))
+            if (currentUser === '루크') { // 임시로 닉네임으로 관리자 확인
                 document.getElementById('admin-page-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-page-btn').classList.add('hidden'); // 관리자가 아니면 숨김
             }
 
             // 데이터 로드
@@ -106,10 +113,18 @@ document.getElementById('logout-btn').addEventListener('click', () => {
     });
 });
 
-// 페이지 로드 시 날짜 입력 필드의 최소 날짜를 오늘로 설정
+// 페이지 로드 시 날짜 입력 필드의 최소 날짜를 오늘로 설정하고 selectedDate 초기화
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date-input').min = today;
+    const dateInput = document.getElementById('date-input');
+    dateInput.min = today;
+    dateInput.value = today; // 오늘 날짜로 기본 설정
+    selectedDate = today; // 전역 변수에도 저장
+});
+
+// 날짜 입력 필드 변경 시 selectedDate 업데이트
+document.getElementById('date-input').addEventListener('change', (event) => {
+    selectedDate = event.target.value;
 });
 
 // 관리자 페이지 버튼 클릭 이벤트
@@ -136,7 +151,7 @@ document.getElementById('my-reservation-list').addEventListener('click', (event)
     // 클릭된 요소가 'change-btn' 클래스를 가지고 있는지 확인
     if (event.target.classList.contains('change-btn')) {
         reservationToUpdateId = event.target.dataset.id;
-        enterUpdateMode();
+        enterUpdateMode(event.target.dataset.themeId, event.target.dataset.startAt);
         return;
     }
 
@@ -150,7 +165,7 @@ document.getElementById('my-reservation-list').addEventListener('click', (event)
 });
 
 // 🚨 예약 변경 모드로 진입하는 함수
-function enterUpdateMode() {
+function enterUpdateMode(themeId, startAt) {
     isUpdateMode = true;
 
     // 1. 화면 전환
@@ -163,6 +178,18 @@ function enterUpdateMode() {
 
     // 3. 기존 선택 초기화
     document.getElementById('schedule-list').innerHTML = '<li class="empty-message">변경할 테마와 날짜를 선택한 후 조회해주세요.</li>';
+
+    // 4. 전달받은 예약 정보로 UI 반영
+    selectedThemeId = parseInt(themeId);
+    loadThemes(); // 테마 목록을 다시 로드하면서 선택된 테마를 하이라이트
+
+    // 날짜 추출 ('T' 또는 공백 구분자 모두 처리)
+    const reservationDate = startAt.replace('T', ' ').split(' ')[0];
+    selectedDate = reservationDate;
+    document.getElementById('date-input').value = reservationDate;
+
+    // 스케줄 조회 버튼 클릭 (선택된 테마와 날짜로 스케줄 로드)
+    document.getElementById('search-schedule-btn').click();
 }
 
 // 🚨 예약 생성 모드로 돌아가는 함수
@@ -171,6 +198,18 @@ function resetToCreateMode() {
     reservationToUpdateId = null;
     document.querySelector('.reservation-form h2').textContent = '예약 가능한 시간';
     document.getElementById('reserve-btn').textContent = '예약하기';
+
+    // ✅ 선택된 테마 및 날짜 초기화
+    selectedThemeId = null;
+    const today = new Date().toISOString().split('T')[0];
+    selectedDate = today;
+    document.getElementById('date-input').value = today;
+
+    // ✅ 모든 테마 카드에서 'selected' 클래스 제거
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+
+    // 스케줄 목록 초기화
+    document.getElementById('schedule-list').innerHTML = '<li class="empty-message">테마와 날짜를 선택한 후 조회해주세요.</li>';
 }
 
 
@@ -200,12 +239,19 @@ function loadThemes() {
                     <p class="theme-time">🕒 ${theme.requiredTime}</p>
                 `;
 
+                // ✅ selectedThemeId가 현재 테마의 ID와 같으면 'selected' 클래스 추가
+                if (selectedThemeId && parseInt(selectedThemeId) === theme.id) {
+                    card.classList.add('selected');
+                }
+
                 // 카드 클릭 시 선택 효과를 주는 이벤트 리스너 추가
                 card.addEventListener('click', () => {
                     // 모든 카드에서 'selected' 클래스 제거
                     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
                     // 클릭된 카드에만 'selected' 클래스 추가
                     card.classList.add('selected');
+                    // ✅ 전역 변수 selectedThemeId 업데이트
+                    selectedThemeId = theme.id;
                 });
 
                 themeContainer.appendChild(card);
@@ -247,19 +293,14 @@ function loadPopularThemes() {
 // API 명세: GET /schedules?date={date}&themeId={themeId} -> [ { id, startAt, ... }, ... ]
 // =================================================================================================
 document.getElementById('search-schedule-btn').addEventListener('click', () => {
-    // 선택된 테마 카드의 ID를 가져옵니다.
-    const selectedThemeCard = document.querySelector('.theme-card.selected');
-    const themeId = selectedThemeCard ? selectedThemeCard.dataset.themeId : null;
-
-    const date = document.getElementById('date-input').value;
-
-    if (!themeId || !date) {
+    // ✅ 전역 변수 selectedThemeId와 selectedDate 사용
+    if (!selectedThemeId || !selectedDate) {
         alert("테마와 날짜를 모두 선택해주세요.");
         return;
     }
 
     // 백틱(`)을 사용해 쿼리 파라미터가 포함된 URL을 만듭니다.
-    const url = `/schedules?date=${date}&themeId=${themeId}`;
+    const url = `/schedules?date=${selectedDate}&themeId=${selectedThemeId}`;
 
     fetch(url)
         .then(response => {
@@ -278,8 +319,8 @@ document.getElementById('search-schedule-btn').addEventListener('click', () => {
 
             schedules.forEach(schedule => {
                 const li = document.createElement('li');
-                // 🚨 공백(' ') 대신 'T'를 기준으로 쪼개서 시간을 추출합니다.
-                const time = schedule.startAt.split('T')[1].substring(0, 5); // "HH:mm" 형식으로 추출
+                // 🚨 공백(' ')을 기준으로 쪼개서 시간을 추출합니다.
+                const time = schedule.startAt.split(' ')[1].substring(0, 5); // "HH:mm" 형식으로 추출
                 // 🚨 이제 value에 schedule.id를 넣습니다!
                 li.innerHTML = `<label><input type="radio" name="schedule" value="${schedule.id}"> <strong>${time}</strong> - 예약 가능 🟢</label>`;
                 scheduleList.appendChild(li);
@@ -298,7 +339,7 @@ function loadMyReservations() {
         return;
     }
 
-    fetch(`/reservations?name=${currentUser}`)
+    fetch('/reservations')
         .then(response => {
             if (!response.ok) throw new Error('내 예약 목록을 불러오는데 실패했습니다.');
             return response.json();
@@ -329,7 +370,7 @@ function loadMyReservations() {
                 if (startDateTime > now) {
                     buttonsHtml = `
                         <div class="reservation-item-buttons">
-                            <button class="change-btn small" data-id="${reservation.reservationId}">변경</button>
+                            <button class="change-btn small" data-id="${reservation.reservationId}" data-theme-id="${reservation.themeId}" data-start-at="${reservation.startAt}">변경</button>
                             <button class="delete-btn small" data-id="${reservation.reservationId}">취소</button>
                         </div>
                     `;
@@ -365,7 +406,7 @@ function loadMyReservations() {
 // API 명세: DELETE /reservations/{id}?name={name}
 // =================================================================================================
 function deleteMyReservation(id) {
-    fetch(`/reservations/${id}?name=${currentUser}`, {
+    fetch(`/reservations/${id}`, {
         method: 'DELETE',
     })
         .then(response => {
@@ -399,7 +440,7 @@ function updateMyReservation() {
         scheduleId: parseInt(newScheduleId)
     };
 
-    fetch(`/reservations/${reservationToUpdateId}?name=${currentUser}`, {
+    fetch(`/reservations/${reservationToUpdateId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -445,8 +486,7 @@ document.getElementById('reserve-btn').addEventListener('click', () => {
 
     // 서버로 보낼 데이터 객체 (백엔드 DTO와 모양을 맞춰야 합니다)
     const reservationData = {
-        scheduleId: parseInt(scheduleId), // 🚨 scheduleId를 보냅니다.
-        name: currentUser // 처음에 로그인할 때 저장해둔 이름을 사용합니다.
+        scheduleId: parseInt(scheduleId)
     };
 
     fetch('/reservations', {

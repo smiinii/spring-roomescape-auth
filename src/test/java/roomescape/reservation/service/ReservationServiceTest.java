@@ -54,7 +54,7 @@ class ReservationServiceTest {
     @Test
     void 새로운_예약을_성공적으로_생성한다() {
         // given
-        CreateReservationRequest request = new CreateReservationRequest(2L, "user1");
+        CreateReservationRequest request = new CreateReservationRequest(2L);
         Schedule availableSchedule = new Schedule(2L, LocalDateTime.of(2024, 12, 10, 15, 0), theme);
 
         when(userService.findByUserName("user1")).thenReturn(user);
@@ -63,7 +63,7 @@ class ReservationServiceTest {
         when(reservationRepository.create(any(Reservation.class))).thenReturn(100L);
 
         // when
-        Long createdId = reservationService.create(request);
+        Long createdId = reservationService.create("user1", request);
 
         // then
         assertThat(createdId).isEqualTo(100L);
@@ -73,14 +73,14 @@ class ReservationServiceTest {
     @Test
     void 이미_예약된_스케줄에_예약을_시도하면_예외가_발생한다() {
         // given
-        CreateReservationRequest request = new CreateReservationRequest(1L, "user1");
+        CreateReservationRequest request = new CreateReservationRequest(1L);
 
         when(userService.findByUserName("user1")).thenReturn(user);
         when(scheduleService.findById(1L)).thenReturn(schedule);
         when(reservationRepository.existsByScheduleId(1L)).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> reservationService.create(request))
+        assertThatThrownBy(() -> reservationService.create("user1", request))
                 .isInstanceOf(ConflictException.class)
                 .hasMessage(ErrorCode.ALREADY_RESERVED_SCHEDULE.getMessage());
     }
@@ -88,14 +88,14 @@ class ReservationServiceTest {
     @Test
     void 과거_시간의_스케줄로_예약을_시도하면_예외가_발생한다() {
         // given
-        CreateReservationRequest request = new CreateReservationRequest(3L, "user1");
+        CreateReservationRequest request = new CreateReservationRequest(3L);
         Schedule pastSchedule = new Schedule(3L, LocalDateTime.of(2024, 5, 16, 9, 0), theme);
 
         when(userService.findByUserName("user1")).thenReturn(user);
         when(scheduleService.findById(3L)).thenReturn(pastSchedule);
 
         // when & then
-        assertThatThrownBy(() -> reservationService.create(request))
+        assertThatThrownBy(() -> reservationService.create("user1", request))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage(ErrorCode.RESERVATION_PAST_TIME.getMessage());
     }

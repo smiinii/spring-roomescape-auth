@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import roomescape.auth.JwtTokenProvider;
 import roomescape.user.dto.JoinUserRequest;
+import roomescape.user.dto.LoginResponse;
 import roomescape.user.dto.LoginUserRequest;
 import roomescape.user.dto.UserResponse;
 import roomescape.user.model.Role;
@@ -37,7 +38,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody @Valid LoginUserRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginUserRequest request) {
         UserResponse response = userService.login(request);
 
         String token = jwtTokenProvider.createToken(request.userName(), response.getRole());
@@ -49,7 +50,7 @@ public class UserController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(response);
+                .body(new LoginResponse(response, token));
     }
 
     @PostMapping("/logout")

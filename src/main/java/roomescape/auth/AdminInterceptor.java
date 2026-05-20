@@ -1,6 +1,5 @@
 package roomescape.auth;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -13,14 +12,16 @@ import roomescape.user.model.Role;
 public class AdminInterceptor implements HandlerInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenExtractor tokenExtractor;
 
-    public AdminInterceptor(JwtTokenProvider jwtTokenProvider) {
+    public AdminInterceptor(JwtTokenProvider jwtTokenProvider, TokenExtractor tokenExtractor) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenExtractor = tokenExtractor;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String token = extractTokenFromCookie(request);
+        String token = tokenExtractor.extract(request);
 
         String role = jwtTokenProvider.getRole(token);
 
@@ -29,17 +30,5 @@ public class AdminInterceptor implements HandlerInterceptor {
         }
 
         return true;
-    }
-
-    private String extractTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("token".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
     }
 }

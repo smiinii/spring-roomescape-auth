@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import roomescape.auth.LoginUser;
 import roomescape.reservation.dto.CreateReservationRequest;
 import roomescape.reservation.dto.ReservationsResponse;
 import roomescape.reservation.dto.UpdateReservationRequest;
@@ -31,32 +32,34 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody @Valid CreateReservationRequest request) {
-        Long id = reservationService.create(request);
+    public ResponseEntity<Void> create(
+            @LoginUser String userName,
+            @RequestBody @Valid CreateReservationRequest request) {
+        Long id = reservationService.create(userName, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping
     public ResponseEntity<ReservationsResponse> findMyReservations(
-            @RequestParam @NotBlank(message = "조회할 이름은 필수입니다.") String name) {
-        ReservationsResponse responses = reservationService.findReservationsByUserName(name);
+            @LoginUser String userName) {
+        ReservationsResponse responses = reservationService.findReservationsByUserName(userName);
         return ResponseEntity.ok(responses);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMyReservation(
             @PathVariable @NotNull(message = "예약 ID는 필수입니다.") @Positive(message = "예약 ID는 양수여야 합니다.") Long id,
-            @RequestParam @NotBlank(message = "사용자 이름은 필수입니다.") String name) {
-        reservationService.delete(id, name);
+            @LoginUser String userName) {
+        reservationService.delete(id, userName);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateMyReservation(
             @PathVariable @NotNull(message = "예약 ID는 필수입니다.") @Positive(message = "예약 ID는 양수여야 합니다.") Long id,
-            @RequestParam @NotBlank(message = "사용자 이름은 필수입니다.") String name,
+            @LoginUser String userName,
             @RequestBody @Valid UpdateReservationRequest request) {
-        reservationService.update(id, request.scheduleId(), name);
+        reservationService.update(id, request.scheduleId(), userName);
         return ResponseEntity.noContent().build();
     }
 }

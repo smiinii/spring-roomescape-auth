@@ -38,8 +38,8 @@ public class ReservationService {
     }
 
     @Transactional
-    public Long create(CreateReservationRequest request) {
-        User user = userService.findByUserName(request.name());
+    public Long create(String userName, CreateReservationRequest request) {
+        User user = userService.findByUserName(userName);
         Schedule schedule = scheduleService.findById(request.scheduleId());
         ensureScheduleIsBookable(schedule);
 
@@ -52,8 +52,8 @@ public class ReservationService {
         }
     }
 
-    public ReservationsResponse findReservationsByUserName(String name) {
-        User user = userService.findByUserName(name);
+    public ReservationsResponse findReservationsByUserName(String userName) {
+        User user = userService.findByUserName(userName);
         List<Reservation> reservations = reservationRepository.findAllByUserId(user.getId());
 
         return ReservationsResponse.from(reservations);

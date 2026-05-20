@@ -46,8 +46,8 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    public User findByUserName(String name) {
-        return userRepository.findByUserName(name)
+    public User findByUserName(String userName) {
+        return userRepository.findByUserName(userName)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     }
 }

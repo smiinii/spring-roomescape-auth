@@ -55,6 +55,12 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        return ResponseEntity.ok().build();
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .maxAge(0)
+                .path("/")
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
     }
 }

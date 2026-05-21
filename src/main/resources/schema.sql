@@ -1,10 +1,26 @@
+DROP TABLE IF EXISTS `reservation`;
+DROP TABLE IF EXISTS `schedule`;
+DROP TABLE IF EXISTS `theme`;
+DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `store`;
+
+CREATE TABLE IF NOT EXISTS `store` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `store_number` VARCHAR(50) NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    CONSTRAINT `PK_STORE` PRIMARY KEY (`id`),
+    CONSTRAINT `UK_STORE_NUMBER` UNIQUE (`store_number`)
+    );
+
 CREATE TABLE IF NOT EXISTS `theme` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `store_id` BIGINT NULL,
     `name` VARCHAR(255) NOT NULL,
     `description` VARCHAR(255) NULL,
     `image_url` VARCHAR(255) NULL,
     `required_time` TIME NOT NULL,
-    CONSTRAINT `PK_THEME` PRIMARY KEY (`id`)
+    CONSTRAINT `PK_THEME` PRIMARY KEY (`id`),
+    CONSTRAINT `FK_THEME_STORE` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `user` (
@@ -13,8 +29,10 @@ CREATE TABLE IF NOT EXISTS `user` (
     `password` VARCHAR(255) NOT NULL,
     `nickname` VARCHAR(255) NOT NULL,
     `role` VARCHAR(30) NOT NULL,
+    `store_id` BIGINT NULL,
     CONSTRAINT `PK_USER` PRIMARY KEY (`id`),
-    CONSTRAINT `UK_USER_NAME` UNIQUE (`username`)
+    CONSTRAINT `UK_USER_NAME` UNIQUE (`username`),
+    CONSTRAINT `FK_USER_STORE` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `schedule` (

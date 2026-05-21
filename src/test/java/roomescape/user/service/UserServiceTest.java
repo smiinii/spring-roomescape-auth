@@ -65,7 +65,7 @@ class UserServiceTest {
     void 로그인에_성공하면_UserResponse를_반환한다() {
         // given
         LoginUserRequest request = new LoginUserRequest("루크", "password123");
-        User expectedUser = new User(1L, "루크", "password123", "루크", Role.USER);
+        User expectedUser = new User(1L, "루크", "password123", "루크", Role.USER, null);
 
         when(userRepository.findByUserName("루크")).thenReturn(java.util.Optional.of(expectedUser));
 
@@ -81,7 +81,7 @@ class UserServiceTest {
     void 로그인_시_비밀번호가_다르면_예외가_발생한다() {
         // given
         LoginUserRequest request = new LoginUserRequest("루크", "wrongPass");
-        User expectedUser = new User(1L, "루크", "password123", "루크", Role.USER);
+        User expectedUser = new User(1L, "루크", "password123", "루크", Role.USER, null);
 
         when(userRepository.findByUserName("루크")).thenReturn(java.util.Optional.of(expectedUser));
 

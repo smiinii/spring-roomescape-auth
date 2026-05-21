@@ -32,8 +32,8 @@ import static org.mockito.Mockito.when;
 
 class ReservationServiceTest {
 
-    private final User user = new User(1L, "user1", "password123", "유저닉네임", Role.USER);
-    private final Theme theme = new Theme(1L, "공포", "설명", "경로", LocalTime.of(2, 0));
+    private final User user = new User(1L, "user1", "password123", "유저닉네임", Role.USER, null);
+    private final Theme theme = new Theme(1L, null, "공포", "설명", "경로", LocalTime.of(2, 0));
     private final Schedule schedule = new Schedule(1L, LocalDateTime.of(2024, 12, 10, 12, 0), theme);
 
     private ReservationService reservationService;
@@ -103,7 +103,7 @@ class ReservationServiceTest {
     @Test
     void 본인의_예약이_아닌_것을_취소하려고_하면_예외가_발생한다() {
         // given
-        User otherUser = new User(2L, "other", "otherPassword", "다른유저", Role.USER);
+        User otherUser = new User(2L, "other", "otherPassword", "다른유저", Role.USER, null);
         Reservation othersReservation = new Reservation(1L, otherUser, schedule);
 
         when(userService.findByUserName("user1")).thenReturn(user);

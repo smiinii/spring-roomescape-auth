@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ScheduleTest {
 
-    private final Theme theme = new Theme(1L, "우테코 방탈출", "꿀잼", "path", LocalTime.of(1, 30));
+    private final Theme theme = new Theme(1L, null, "우테코 방탈출", "꿀잼", "path", LocalTime.of(1, 30));
 
     @Test
     void 스케줄_시작_시간이_현재_시간보다_이전이면_true를_반환한다() {

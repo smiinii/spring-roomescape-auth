@@ -13,6 +13,8 @@ import roomescape.schedule.repository.ScheduleRepository;
 import roomescape.theme.model.Theme;
 import roomescape.theme.service.ThemeService;
 import roomescape.exception.ErrorCode;
+import roomescape.user.model.Role;
+import roomescape.user.model.User;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -36,7 +38,8 @@ class ScheduleServiceTest {
     private ThemeService themeService;
     private Clock clock;
 
-    private final Theme theme = new Theme(1L, "테마", "설명", "경로", LocalTime.of(2, 0));
+    private final Theme theme = new Theme(1L, null, "테마", "설명", "경로", LocalTime.of(2, 0));
+    private final User adminUser = new User(1L, "admin", "password", "관리자", Role.ADMIN, null);
 
     @BeforeEach
     void setUp() {
@@ -73,7 +76,7 @@ class ScheduleServiceTest {
         when(scheduleRepository.create(any(Schedule.class))).thenReturn(1L);
 
         // when
-        Long createdId = scheduleService.create(request);
+        Long createdId = scheduleService.create(request, adminUser);
 
         // then
         assertThat(createdId).isEqualTo(1L);
@@ -87,7 +90,7 @@ class ScheduleServiceTest {
         AdminScheduleRequest request = new AdminScheduleRequest(theme.getId(), pastDate, time);
 
         // when & then
-        assertThatThrownBy(() -> scheduleService.create(request))
+        assertThatThrownBy(() -> scheduleService.create(request, adminUser))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage(ErrorCode.PAST_SCHEDULE_CREATION.getMessage());
     }
@@ -100,7 +103,7 @@ class ScheduleServiceTest {
         AdminScheduleRequest request = new AdminScheduleRequest(theme.getId(), date, time);
 
         // when & then
-        assertThatThrownBy(() -> scheduleService.create(request))
+        assertThatThrownBy(() -> scheduleService.create(request, adminUser))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage(ErrorCode.INVALID_SCHEDULE_TIME.getMessage());
     }
@@ -115,7 +118,7 @@ class ScheduleServiceTest {
         when(themeService.findById(theme.getId())).thenReturn(theme);
 
         // when & then
-        assertThatThrownBy(() -> scheduleService.create(request))
+        assertThatThrownBy(() -> scheduleService.create(request, adminUser))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage(ErrorCode.INVALID_SCHEDULE_TIME.getMessage());
     }
@@ -135,7 +138,7 @@ class ScheduleServiceTest {
                 .thenReturn(List.of(existingSchedule));
 
         // when & then
-        assertThatThrownBy(() -> scheduleService.create(request))
+        assertThatThrownBy(() -> scheduleService.create(request, adminUser))
                 .isInstanceOf(ConflictException.class)
                 .hasMessage(ErrorCode.DUPLICATE_SCHEDULE_TIME.getMessage());
     }
@@ -146,7 +149,7 @@ class ScheduleServiceTest {
         Long scheduleId = 1L;
 
         // when
-        scheduleService.delete(scheduleId);
+        scheduleService.delete(scheduleId, adminUser);
 
         // then
         Mockito.verify(scheduleRepository, Mockito.times(1)).delete(scheduleId);
@@ -159,7 +162,7 @@ class ScheduleServiceTest {
                 .when(scheduleRepository).delete(1L);
 
         // when & then
-        assertThatThrownBy(() -> scheduleService.delete(1L))
+        assertThatThrownBy(() -> scheduleService.delete(1L, adminUser))
                 .isInstanceOf(ConflictException.class)
                 .hasMessage(ErrorCode.SCHEDULE_IN_USE.getMessage());
     }

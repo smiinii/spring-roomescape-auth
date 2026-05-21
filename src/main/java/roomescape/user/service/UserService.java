@@ -30,7 +30,7 @@ public class UserService {
         try {
             User user = new User(request.userName(), request.password(), request.nickName(), DEFAULT);
             Long id = userRepository.create(user);
-            return UserResponse.from(new User(id, request.userName(), request.password(), request.nickName(), DEFAULT));
+            return UserResponse.from(new User(id, request.userName(), request.password(), request.nickName(), DEFAULT, null));
         } catch (DuplicateKeyException e) {
             throw new ConflictException(ErrorCode.DUPLICATE_USER_NAME);
         }

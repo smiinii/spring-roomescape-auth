@@ -38,14 +38,15 @@ public class UserRepository {
     }
 
     public Optional<User> findByUserName(String name) {
-        String sql = "SELECT id, username, password, nickname, role FROM `user` WHERE username = ?";
+        String sql = "SELECT id, username, password, nickname, role, store_id FROM `user` WHERE username = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new User(
                     rs.getLong("id"),
                     rs.getString("username"),
                     rs.getString("password"),
                     rs.getString("nickname"),
-                    Role.valueOf(rs.getString("role"))
+                    Role.valueOf(rs.getString("role")),
+                    rs.getObject("store_id", Long.class)
             ), name);
             return Optional.of(user);
         } catch (EmptyResultDataAccessException e) {

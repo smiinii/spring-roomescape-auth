@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.exception.BadRequestException;
 import roomescape.exception.ConflictException;
+import roomescape.exception.ForbiddenException;
 import roomescape.exception.NotFoundException;
 import roomescape.schedule.dto.AdminScheduleRequest;
 import roomescape.schedule.dto.ScheduleRequest;
@@ -14,6 +15,8 @@ import roomescape.schedule.repository.ScheduleRepository;
 import roomescape.theme.model.Theme;
 import roomescape.theme.service.ThemeService;
 import roomescape.exception.ErrorCode;
+import roomescape.user.model.Role;
+import roomescape.user.model.User;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -48,17 +51,29 @@ public class ScheduleService {
         return SchedulesResponse.from(schedules);
     }
 
+    public SchedulesResponse findAllByUser(User user) {
+        List<Schedule> schedules = user.getRole() == Role.MANAGER
+                ? scheduleRepository.findAllByStoreId(user.getStoreId())
+                : scheduleRepository.findAll();
+        return SchedulesResponse.from(schedules);
+    }
+
     public Schedule findById(Long id) {
         return scheduleRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
     @Transactional
-    public Long create(AdminScheduleRequest request) {
+    public Long create(AdminScheduleRequest request, User user) {
         LocalDateTime newStartAt = LocalDateTime.of(request.date(), request.time());
         validateOpeningTime(newStartAt);
 
         Theme theme = themeService.findById(request.themeId());
+
+        if (user.getRole() == Role.MANAGER && !user.getStoreId().equals(theme.getStoreId())) {
+            throw new ForbiddenException(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
         LocalDateTime newEndAt = calculateEndAt(newStartAt, theme.getRequiredTime());
 
         validateCloseTime(newEndAt);
@@ -69,7 +84,14 @@ public class ScheduleService {
     }
 
     @Transactional
-    public void delete(Long scheduleId) {
+    public void delete(Long scheduleId, User user) {
+        if (user.getRole() == Role.MANAGER) {
+            Schedule schedule = scheduleRepository.findById(scheduleId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.SCHEDULE_NOT_FOUND));
+            if (!user.getStoreId().equals(schedule.getTheme().getStoreId())) {
+                throw new ForbiddenException(ErrorCode.INSUFFICIENT_PERMISSIONS);
+            }
+        }
         try {
             scheduleRepository.delete(scheduleId);
         } catch (DataIntegrityViolationException e) {

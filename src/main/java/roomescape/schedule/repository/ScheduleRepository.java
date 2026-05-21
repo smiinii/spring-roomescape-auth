@@ -60,6 +60,11 @@ public class ScheduleRepository {
         return jdbcTemplate.query(sql, this::mapToSchedule);
     }
 
+    public List<Schedule> findAllByStoreId(Long storeId) {
+        String sql = getScheduleSelectQuery() + "\n WHERE t.store_id = ?";
+        return jdbcTemplate.query(sql, this::mapToSchedule, storeId);
+    }
+
     public List<Schedule> findReservableSchedules(Long themeId, LocalDate date) {
         String sql = getScheduleSelectQuery() + """
                 \n LEFT JOIN reservation r ON s.id = r.schedule_id
@@ -96,6 +101,7 @@ public class ScheduleRepository {
     private Schedule mapToSchedule(ResultSet resultSet, int rowNum) throws SQLException {
         Theme theme = new Theme(
                 resultSet.getLong("theme_id"),
+                resultSet.getObject("theme_store_id", Long.class),
                 resultSet.getString("theme_name"),
                 resultSet.getString("description"),
                 resultSet.getString("image_url"),
@@ -115,6 +121,7 @@ public class ScheduleRepository {
                        s.start_at,
                        s.end_at,
                        t.id AS theme_id,
+                       t.store_id AS theme_store_id,
                        t.name AS theme_name,
                        t.description,
                        t.image_url,

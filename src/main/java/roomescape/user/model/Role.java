@@ -1,5 +1,5 @@
 package roomescape.user.model;
 
 public enum Role {
-    ADMIN, USER;
+    ADMIN, MANAGER, USER;
 }

@@ -5,6 +5,7 @@ import java.time.LocalTime;
 public class Theme {
 
     private Long id;
+    private Long storeId;
     private String name;
     private String description;
     private String imageUrl;
@@ -14,13 +15,14 @@ public class Theme {
     }
 
     public Theme(String name, String description, String imageUrl, LocalTime requiredTime) {
-        this(null, name, description, imageUrl, requiredTime);
+        this(null, null, name, description, imageUrl, requiredTime);
     }
 
-    public Theme(Long id, String name, String description, String imageUrl, LocalTime requiredTime) {
+    public Theme(Long id, Long storeId, String name, String description, String imageUrl, LocalTime requiredTime) {
         validateName(name);
         validateRequiredTime(requiredTime);
         this.id = id;
+        this.storeId = storeId;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
@@ -41,6 +43,10 @@ public class Theme {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getStoreId() {
+        return storeId;
     }
 
     public String getName() {

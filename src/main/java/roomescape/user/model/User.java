@@ -7,14 +7,15 @@ public class User {
     private String password;
     private String nickname;
     private Role role;
+    private Long storeId;
 
     public User(){}
 
     public User(String username, String password, String nickname, Role role) {
-        this(null, username, password, nickname, role);
+        this(null, username, password, nickname, role, null);
     }
 
-    public User(Long id, String username, String password, String nickname, Role role) {
+    public User(Long id, String username, String password, String nickname, Role role, Long storeId) {
         validateUsername(username);
         validatePassword(password);
         validateNickname(nickname);
@@ -24,6 +25,7 @@ public class User {
         this.password = password;
         this.nickname = nickname;
         this.role = role;
+        this.storeId = storeId;
     }
 
     public Long getId() {
@@ -44,6 +46,10 @@ public class User {
 
     public Role getRole() {
         return role;
+    }
+
+    public Long getStoreId() {
+        return storeId;
     }
 
     private void validateUsername(String name) {

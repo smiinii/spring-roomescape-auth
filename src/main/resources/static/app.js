@@ -76,24 +76,20 @@ document.getElementById('login-btn').addEventListener('click', () => {
             }
         })
         .then(userData => {
-            // 서버에서 받아온 UserResponse의 nickname을 저장 (실제로는 username이 담겨있음)
             currentUser = userData.nickname;
 
             // 화면 전환
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('reservation-section').classList.remove('hidden');
 
-            // 💡 관리자일 경우, 관리자 페이지로 가는 버튼을 보여줍니다.
-            // 이 부분은 나중에 백엔드에서 role을 받아와서 처리하는 것이 더 좋습니다.
-            // (예: if (userData.role === 'ADMIN'))
-            if (currentUser === '루크') { // 임시로 닉네임으로 관리자 확인
+            if (userData.role === 'ADMIN' || userData.role === 'MANAGER') {
                 document.getElementById('admin-page-btn').classList.remove('hidden');
             } else {
-                document.getElementById('admin-page-btn').classList.add('hidden'); // 관리자가 아니면 숨김
+                document.getElementById('admin-page-btn').classList.add('hidden');
             }
 
             // 데이터 로드
-            loadThemes();
+            loadStores();
             loadPopularThemes();
         })
         .catch(error => {
@@ -181,7 +177,8 @@ function enterUpdateMode(themeId, startAt) {
 
     // 4. 전달받은 예약 정보로 UI 반영
     selectedThemeId = parseInt(themeId);
-    loadThemes(); // 테마 목록을 다시 로드하면서 선택된 테마를 하이라이트
+    const storeId = document.getElementById('store-select').value;
+    loadThemes(storeId || undefined); // 테마 목록을 다시 로드하면서 선택된 테마를 하이라이트
 
     // 날짜 추출 ('T' 또는 공백 구분자 모두 처리)
     const reservationDate = startAt.replace('T', ' ').split(' ')[0];
@@ -217,8 +214,37 @@ function resetToCreateMode() {
 // ✅ TODO 1: 테마 목록을 API(GET /themes)로 가져와서 <select>에 채우기
 // API 명세: GET /themes -> [ { id, name, ... }, ... ]
 // =================================================================================================
-function loadThemes() {
-    fetch('/themes')
+function loadStores() {
+    fetch('/stores')
+        .then(response => response.json())
+        .then(stores => {
+            const select = document.getElementById('store-select');
+            select.innerHTML = '<option value="">매장을 선택하세요</option>';
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.id;
+                option.textContent = store.name;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error(error));
+}
+
+document.getElementById('store-select').addEventListener('change', (event) => {
+    const storeId = event.target.value;
+    selectedThemeId = null;
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('schedule-list').innerHTML = '<li class="empty-message">테마와 날짜를 선택한 후 조회해주세요.</li>';
+    if (storeId) {
+        loadThemes(storeId);
+    } else {
+        document.getElementById('theme-list-container').innerHTML = '';
+    }
+});
+
+function loadThemes(storeId) {
+    const url = storeId ? `/themes?storeId=${storeId}` : '/themes';
+    fetch(url)
         .then(response => {
             if (!response.ok) throw new Error('서버에서 테마 목록을 불러오는데 실패했습니다.');
             return response.json();

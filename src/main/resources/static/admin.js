@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 테마 목록 불러오기 (GET /themes)
 // 스케줄 추가 폼의 드롭다운을 채우고, 테마 목록 테이블을 그립니다.
 function loadThemesForAdmin() {
-    fetch('/themes')
+    fetch('/admin/themes')
         .then(response => {
             if (!response.ok) throw new Error('테마 목록을 불러오는데 실패했습니다.');
             return response.json();

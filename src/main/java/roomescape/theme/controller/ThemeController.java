@@ -20,8 +20,11 @@ public class ThemeController {
     }
 
     @GetMapping
-    public ResponseEntity<ThemesResponse> findAll() {
-        ThemesResponse responses = themeService.findAll();
+    public ResponseEntity<ThemesResponse> findAll(
+            @RequestParam(required = false) Long storeId) {
+        ThemesResponse responses = storeId != null
+                ? themeService.findAllByStoreId(storeId)
+                : themeService.findAll();
         return ResponseEntity.ok(responses);
     }
 

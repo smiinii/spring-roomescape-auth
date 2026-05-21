@@ -29,32 +29,37 @@ public class ThemeRepository {
 
     public List<Theme> findAll() {
         String sql = "SELECT * FROM theme";
+        return jdbcTemplate.query(sql, this::mapToTheme);
+    }
 
-        return jdbcTemplate.query(
-                sql,
-                (resultSet, rowNum) -> {
-                    return new Theme(
-                            resultSet.getLong("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("description"),
-                            resultSet.getString("image_url"),
-                            resultSet.getObject("required_time", LocalTime.class)
-                    );
-                }
+    public List<Theme> findAllByStoreId(Long storeId) {
+        String sql = "SELECT * FROM theme WHERE store_id = ?";
+        return jdbcTemplate.query(sql, this::mapToTheme, storeId);
+    }
+
+    private Theme mapToTheme(java.sql.ResultSet resultSet, int rowNum) throws java.sql.SQLException {
+        return new Theme(
+                resultSet.getLong("id"),
+                resultSet.getObject("store_id", Long.class),
+                resultSet.getString("name"),
+                resultSet.getString("description"),
+                resultSet.getString("image_url"),
+                resultSet.getObject("required_time", LocalTime.class)
         );
     }
 
     public Long create(Theme theme) {
-        String sql = "INSERT INTO theme (name, description, image_url, required_time) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO theme (store_id, name, description, image_url, required_time) VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(
                 connection -> {
                     PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
-                    ps.setString(1, theme.getName());
-                    ps.setString(2, theme.getDescription());
-                    ps.setString(3, theme.getImageUrl());
-                    ps.setObject(4, theme.getRequiredTime());
+                    ps.setObject(1, theme.getStoreId());
+                    ps.setString(2, theme.getName());
+                    ps.setString(3, theme.getDescription());
+                    ps.setString(4, theme.getImageUrl());
+                    ps.setObject(5, theme.getRequiredTime());
                     return ps;
                 }, keyHolder);
         return keyHolder.getKey().longValue();
@@ -66,15 +71,9 @@ public class ThemeRepository {
     }
 
     public Optional<Theme> findById(Long id) {
-        String sql = "SELECT id, name, description, image_url, required_time FROM theme WHERE id = ?";
+        String sql = "SELECT id, store_id, name, description, image_url, required_time FROM theme WHERE id = ?";
         try {
-            Theme theme = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new Theme(
-                    rs.getLong("id"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getString("image_url"),
-                    rs.getObject("required_time", LocalTime.class)
-            ), id);
+            Theme theme = jdbcTemplate.queryForObject(sql, this::mapToTheme, id);
             return Optional.of(theme);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();

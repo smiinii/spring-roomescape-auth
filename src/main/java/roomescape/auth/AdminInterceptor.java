@@ -25,7 +25,7 @@ public class AdminInterceptor implements HandlerInterceptor {
 
         String role = jwtTokenProvider.getRole(token);
 
-        if (!Role.ADMIN.name().equals(role)) {
+        if (!Role.ADMIN.name().equals(role) && !Role.MANAGER.name().equals(role)) {
             throw new ForbiddenException(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 

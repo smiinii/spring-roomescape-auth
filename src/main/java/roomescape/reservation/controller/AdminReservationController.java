@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import roomescape.auth.LoginUser;
 import roomescape.reservation.dto.ReservationsResponse;
 import roomescape.reservation.service.ReservationService;
 
@@ -22,14 +23,16 @@ public class AdminReservationController {
     }
 
     @GetMapping
-    public ResponseEntity<ReservationsResponse> findAll() {
-        ReservationsResponse responses = reservationService.findAll();
+    public ResponseEntity<ReservationsResponse> findAll(@LoginUser String userName) {
+        ReservationsResponse responses = reservationService.findAllByAdmin(userName);
         return ResponseEntity.ok(responses);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable @NotNull(message = "예약 ID는 필수입니다.") @Positive(message = "예약 ID는 양수여야 합니다.") Long id) {
-        reservationService.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable @NotNull(message = "예약 ID는 필수입니다.") @Positive(message = "예약 ID는 양수여야 합니다.") Long id,
+            @LoginUser String userName) {
+        reservationService.deleteByAdmin(id, userName);
         return ResponseEntity.noContent().build();
     }
 }

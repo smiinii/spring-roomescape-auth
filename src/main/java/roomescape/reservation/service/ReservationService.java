@@ -14,6 +14,7 @@ import org.springframework.dao.DuplicateKeyException;
 import roomescape.reservation.repository.ReservationRepository;
 import roomescape.schedule.model.Schedule;
 import roomescape.schedule.service.ScheduleService;
+import roomescape.user.model.Role;
 import roomescape.user.model.User;
 import roomescape.user.service.UserService;
 
@@ -64,9 +65,28 @@ public class ReservationService {
         return ReservationsResponse.from(responses);
     }
 
+    public ReservationsResponse findAllByAdmin(String userName) {
+        User admin = userService.findByUserName(userName);
+        List<Reservation> reservations = admin.getRole() == roomescape.user.model.Role.MANAGER
+                ? reservationRepository.findAllByStoreId(admin.getStoreId())
+                : reservationRepository.findAll();
+        return ReservationsResponse.from(reservations);
+    }
+
     @Transactional
-    public void delete(Long id) {
-        reservationRepository.delete(id);
+    public void deleteByAdmin(Long reservationId, String userName) {
+        User admin = userService.findByUserName(userName);
+
+        if (admin.getRole() == Role.MANAGER) {
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new NotFoundException(ErrorCode.RESERVATION_NOT_FOUND));
+
+            Long reservationStoreId = reservation.getSchedule().getTheme().getStoreId();
+            if (!reservationStoreId.equals(admin.getStoreId())) {
+                throw new ForbiddenException(ErrorCode.INSUFFICIENT_PERMISSIONS);
+            }
+        }
+        reservationRepository.delete(reservationId);
     }
 
     @Transactional

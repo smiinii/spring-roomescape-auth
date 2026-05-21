@@ -47,6 +47,11 @@ public class ReservationRepository {
         return jdbcTemplate.query(sql, this::mapToReservation);
     }
 
+    public List<Reservation> findAllByStoreId(Long storeId) {
+        String sql = getReservationSelectQuery() + " WHERE t.store_id = ?";
+        return jdbcTemplate.query(sql, this::mapToReservation, storeId);
+    }
+
     public List<Reservation> findAllByUserId(Long userId) {
         String sql = getReservationSelectQuery() + " WHERE u.id = ?";
         return jdbcTemplate.query(sql, this::mapToReservation, userId);
@@ -83,11 +88,13 @@ public class ReservationRepository {
                 resultSet.getString("user_name"),
                 resultSet.getString("user_password"),
                 resultSet.getString("user_nickname"),
-                Role.valueOf(resultSet.getString("user_role"))
+                Role.valueOf(resultSet.getString("user_role")),
+                null
         );
 
         Theme theme = new Theme(
                 resultSet.getLong("theme_id"),
+                resultSet.getObject("theme_store_id", Long.class),
                 resultSet.getString("theme_name"),
                 resultSet.getString("theme_description"),
                 resultSet.getString("theme_image"),
@@ -112,6 +119,7 @@ public class ReservationRepository {
                        u.nickname AS user_nickname,
                        u.role AS user_role,
                        t.id AS theme_id,
+                       t.store_id AS theme_store_id,
                        t.description AS theme_description,
                        t.image_url AS theme_image,
                        t.required_time AS theme_required_time,

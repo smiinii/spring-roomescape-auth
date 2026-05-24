@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `nickname` VARCHAR(255) NOT NULL,
     `role` VARCHAR(30) NOT NULL,
     `store_id` BIGINT NULL,
+    `token_version` INT NOT NULL DEFAULT 0,
     CONSTRAINT `PK_USER` PRIMARY KEY (`id`),
     CONSTRAINT `UK_USER_NAME` UNIQUE (`username`),
     CONSTRAINT `FK_USER_STORE` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`)

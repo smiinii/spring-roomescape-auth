@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import roomescape.auth.JwtTokenProvider;
+import roomescape.auth.LoginUser;
 import roomescape.user.dto.JoinUserRequest;
 import roomescape.user.dto.LoginResponse;
 import roomescape.user.dto.LoginUserRequest;
 import roomescape.user.dto.UserResponse;
-import roomescape.user.model.Role;
 import roomescape.user.service.UserService;
 
 @RestController
@@ -54,7 +54,9 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(@LoginUser String username) {
+        userService.logout(username);
+
         ResponseCookie cookie = ResponseCookie.from("token", "")
                 .maxAge(0)
                 .path("/")

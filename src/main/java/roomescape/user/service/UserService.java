@@ -52,4 +52,10 @@ public class UserService {
         return userRepository.findByUserName(userName)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     }
+
+    @Transactional
+    public void logout(String username) {
+        User user = this.findByUserName(username);
+        userRepository.incrementTokenVersion(user.getId());
+    }
 }

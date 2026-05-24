@@ -43,7 +43,9 @@ public class UserService {
         if (!user.getPassword().equals(request.password())) {
             throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
         }
-        return UserResponse.from(user);
+
+        userRepository.incrementTokenVersion(user.getId());
+        return UserResponse.from(this.findByUserName(request.userName()));
     }
 
     public User findByUserName(String userName) {

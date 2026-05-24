@@ -41,7 +41,7 @@ public class UserController {
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginUserRequest request) {
         UserResponse response = userService.login(request);
 
-        String token = jwtTokenProvider.createToken(request.userName(), response.getRole());
+        String token = jwtTokenProvider.createToken(request.userName(), response.getRole(), response.getTokenVersion());
 
         ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)

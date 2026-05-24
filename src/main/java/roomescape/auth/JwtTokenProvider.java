@@ -26,13 +26,14 @@ public class JwtTokenProvider {
         this.clock = clock;
     }
 
-    public String createToken(String username, String role) {
+    public String createToken(String username, String role, int tokenVersion) {
         Date now = Date.from(clock.instant());
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
+                .claim("version", tokenVersion)
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -55,5 +56,14 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .get("role", String.class);
+    }
+
+    public Integer getVersion(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("version", Integer.class);
     }
 }

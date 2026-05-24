@@ -8,14 +8,19 @@ public class User {
     private String nickname;
     private Role role;
     private Long storeId;
+    private int tokenVersion;
 
     public User(){}
 
     public User(String username, String password, String nickname, Role role) {
-        this(null, username, password, nickname, role, null);
+        this(null, username, password, nickname, role, null, 0);
     }
 
     public User(Long id, String username, String password, String nickname, Role role, Long storeId) {
+        this(id, username, password, nickname, role, storeId, 0);
+    }
+
+    public User(Long id, String username, String password, String nickname, Role role, Long storeId, int tokenVersion) {
         validateUsername(username);
         validatePassword(password);
         validateNickname(nickname);
@@ -26,6 +31,7 @@ public class User {
         this.nickname = nickname;
         this.role = role;
         this.storeId = storeId;
+        this.tokenVersion = tokenVersion;
     }
 
     public Long getId() {
@@ -50,6 +56,10 @@ public class User {
 
     public Long getStoreId() {
         return storeId;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
     }
 
     private void validateUsername(String name) {

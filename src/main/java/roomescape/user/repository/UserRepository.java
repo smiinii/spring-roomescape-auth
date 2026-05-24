@@ -38,7 +38,7 @@ public class UserRepository {
     }
 
     public Optional<User> findByUserName(String name) {
-        String sql = "SELECT id, username, password, nickname, role, store_id FROM `user` WHERE username = ?";
+        String sql = "SELECT id, username, password, nickname, role, store_id, token_version FROM `user` WHERE username = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new User(
                     rs.getLong("id"),
@@ -46,11 +46,17 @@ public class UserRepository {
                     rs.getString("password"),
                     rs.getString("nickname"),
                     Role.valueOf(rs.getString("role")),
-                    rs.getObject("store_id", Long.class)
+                    rs.getObject("store_id", Long.class),
+                    rs.getInt("token_version")
             ), name);
             return Optional.of(user);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    public void incrementTokenVersion(Long userId) {
+        String sql = "UPDATE `user` SET token_version = token_version + 1 WHERE id = ?";
+        jdbcTemplate.update(sql, userId);
     }
 }

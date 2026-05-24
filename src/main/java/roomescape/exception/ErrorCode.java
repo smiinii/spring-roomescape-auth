@@ -28,6 +28,8 @@ public enum ErrorCode {
     // Theme
     THEME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 테마입니다. 목록에서 테마를 다시 선택해주세요."),
     THEME_IN_USE(HttpStatus.CONFLICT, "해당 테마를 사용하는 스케줄이 존재하여 삭제할 수 없습니다. 스케줄을 먼저 처리해주세요."),
+    // Validation
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
     // Server
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 서버 내부 에러가 발생했습니다. 관리자에게 문의해주세요.");
 

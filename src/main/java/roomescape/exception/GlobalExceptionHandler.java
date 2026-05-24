@@ -1,8 +1,8 @@
 package roomescape.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.QueryTimeoutException;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -37,14 +36,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        String errorMessage = ex.getBindingResult()
-                .getAllErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.joining(", "));
-
-        log.warn("[WARN] @Valid 검증 실패: {}", errorMessage);
-        return ResponseEntity.badRequest().body(new ErrorResponse("INVALID_INPUT_VALUE", errorMessage));
+        log.warn("[WARN] @Valid 검증 실패: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse(ErrorCode.INVALID_INPUT_VALUE.name(), ErrorCode.INVALID_INPUT_VALUE.getMessage()));
     }
 
     @Override
@@ -91,6 +85,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(status)
                 .body(new ErrorResponse(errorCodeName, friendlyMessage));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        log.warn("[WARN] @PathVariable/@RequestParam 검증 실패: {}", ex.getMessage());
+        return createErrorResponse(ErrorCode.INVALID_INPUT_VALUE);
     }
 
     @ExceptionHandler(NotFoundException.class)

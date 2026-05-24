@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import roomescape.auth.LoginUser;
 import roomescape.theme.dto.ThemeRequest;
@@ -13,6 +14,7 @@ import roomescape.theme.service.ThemeService;
 import roomescape.user.model.User;
 import roomescape.user.service.UserService;
 
+@Validated
 @RestController
 @RequestMapping("/admin/themes")
 public class AdminThemeController {

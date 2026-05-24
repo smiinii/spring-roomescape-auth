@@ -3,6 +3,7 @@ package roomescape.schedule.controller;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +15,7 @@ import roomescape.schedule.service.ScheduleService;
 
 import java.time.LocalDate;
 
+@Validated
 @RestController
 @RequestMapping("/schedules")
 public class ScheduleController {
